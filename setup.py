@@ -12,7 +12,7 @@ setup(
     version='0.0.1',
     packages=['drawline'],
     url='https://github.com/bendangnuksung/drawline',
-    license='',
+    license='MIT License',
     author='bendangnuksung',
     author_email='bendangnuksungimsong@gmail.com',
     description='Clean draw of  rectangle and polygon contours',

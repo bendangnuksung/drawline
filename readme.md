@@ -1,6 +1,9 @@
 ## Drawline
 
-Overlaying polygon contours and rectangle on images with minimum effort.
+If you are tired to always search how to overlay box/polygons into the images and have to trial-and-error to get the right Font size, thickness or lines and what not.
+Then this is for people like us. 
+
+Drawline overlays polygon contours and rectangle on images with minimum effort.
 It auto handles color picking for labels, font size, line thickness. (User has option to override it too) 
 
 ### install
