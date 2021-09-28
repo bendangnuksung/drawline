@@ -1,5 +1,5 @@
 import cv2
-from drawline.draw_process import draw_poly
+from drawline.draw_process import draw_poly, draw_rect
 
 
 from drawline.utils import display, get_biggest_contour, random_resize_and_crop, get_rect_from_poly
@@ -25,19 +25,30 @@ for i in range(10):
 
     # cv2.drawContours(test_image, [single_contour], -1, (0, 255, 0), 3)
     # display(test_image)
-    start_point, end_point = get_rect_from_poly(single_contour)
+
+    rects = []
+    for contour in contours:
+        start_point, end_point = get_rect_from_poly(contour)
+        rect = start_point + end_point
+        rects.append(rect)
+
+    test_image = draw_rect(test_image, rects[0])
 
     # test_image = draw_rect(test_image, start_point, end_point, label='HELLO')
     # print("Contours: ", len(contours))
     tt = test_image.copy()
     # cv2.drawContours(tt, contours, -1, (0, 255, 0), 3)
     # display(tt)
-    for j, c in enumerate(contours):
-        try:
-            test_image = draw_poly(test_image, c, label=f'contour {j}', show_rect=True)
-        except Exception as e:
-            print(e)
-            continue
+
+    # for j, c in enumerate(contours):
+    #     try:
+    #         test_image = draw_poly(test_image, c, labels=f'contour {j}', show_rect=True)
+    #     except Exception as e:
+    #         print(e)
+    #         continue
+
+    # test_image = draw_poly(test_image, contours, labels=f'contour 1', show_rect=True)
+
     # if i not in [9]:
     #     continue
     # print(test_image.shape)
