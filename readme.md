@@ -20,18 +20,54 @@ img_pth = '/PATH/TO/IMAGE.jpg'
 image = cv2.imread(img_pth)
 
 # for rectangles
-result_image = draw_rect(image, (XMIN, YMIN), (XMAX, YMAX), label='labelname')
+result_image = draw_rect(image,
+                         [[XMIN_1, YMIN_1, XMAX_1, YMAX_1], [XMIN_2, YMIN_2, XMAX_2, YMAX_2]],
+                         labels=['Label_1', 'Label_2'])
+
 
 # for polygons
-result_image = draw_poly(image, CONTOURS, label='labelname', show_rect=True) 
+result_image = draw_poly(image, CONTOURS,
+                         label=['label_1', 'label_2', ...]) 
 ```
 
 ### Default options
-`draw_poly(image, contour, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, label=None, label_rgb=(255, 255, 255),
-              label_bg_rgb=None, label_font_size=None, random_color=True)`
 
-`draw_rect(image, start_point, end_point, rgb=None, thickness=None,
-              label=None, label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
-              random_color=True)`
-
+```python
+def draw_rect(image, points, rgb=None, thickness=None,
+              labels=None, label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
+              random_color=True):
+    """
+    Draws rectangle from given coordinates
+    :param image: (Numpy) numpy matrix image
+    :param points: (List) List of rectangle coordinates: [[xmin, ymin, xmax, ymax]]
+    :param rgb: (Tuple) RGB values: (R, G, B)
+    :param thickness: (Integer) of line in px: eg: 2
+    :param labels: (List) list of strings: []
+    :param label_rgb: (Tuple) RGB text color for labels: (R,G,B)
+    :param label_bg_rgb: (Tuple) RGB label background color: (R,G,B)
+    :param label_font_size: (Integer) Font size of label in px: 2
+    :param random_color: (Boolean) pick random colors for lines.
+    :return: (numpy) image with rectangles
+    """
+    
+    
+def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, labels=None, label_rgb=(255, 255, 255),
+              label_bg_rgb=None, label_font_size=None, random_color=True):
+    """
+    Draws polygon and fills in color from given contours
+    :param image: (Numpy) numpy matrix image
+    :param contours: (List) of contours
+    :param fill_in: (Boolean) fill color inside the polygon.
+    :param transparency: (Float) transparency of fill_in color.
+    :param rgb: RGB values: (Tuple) rgb color of line and polyfgon (R, G, B)
+    :param thickness: (Int) Thickness of line
+    :param show_rect: (Boolean) Show rectangle
+    :param labels: (List of strings) List of label names
+    :param label_rgb: (Tuple) RGB color of labels
+    :param label_bg_rgb: (Tuple) RGB color of Label background
+    :param label_font_size: (Int) Label font size
+    :param random_color: (Boolean) Randomize RGB color
+    :return:
+    """
+```
 
