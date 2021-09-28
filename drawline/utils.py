@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import random
+import numpy as np
 import cv2
 
 
@@ -60,6 +61,51 @@ def random_resize(cimg):
     return cimg
 
 
+def prepare_points(points):
+    new_points = []
+    points = np.array(points)
+    points = np.squeeze(points)
+    if len(points.shape) > 1:
+        for p in points:
+            new_points.append(p)
+    else:
+        new_points.append(points)
+    return new_points
+
+
+def prepare_val_contours(contours):
+    if type(contours) == list:
+        contours = np.array(contours)
+
+    new_contours = []
+
+    if len(contours.shape) == 1:
+        for contour in contours:
+            contour = np.squeeze(contour)
+            new_contours.append(contour)
+    else:
+        contours = np.squeeze(contours)
+        try:
+            assert len(contours.shape) == 2
+        except:
+            print("Contour shape not proper: ", contours.shape)
+        new_contours.append(contours)
+
+    return new_contours
+
+
+def prepare_labels(contours, labels):
+    new_labels = []
+    for i in range(len(contours)):
+        if type(labels) == list:
+            new_labels.append(labels[i])
+        elif type(labels) == str:
+            new_labels.append(labels)
+        else:
+            new_labels.append(None)
+    return new_labels
+
+
 def random_resize_and_crop(image):
     cimg = image.copy()
     cimg = random_crop(cimg)
@@ -68,7 +114,10 @@ def random_resize_and_crop(image):
 
 
 def get_rect_from_poly(contour):
-    (x, y, w, h) = cv2.boundingRect(contour)
+    try:
+        (x, y, w, h) = cv2.boundingRect(contour)
+    except Exception as e:
+        pass
     start_point = (x, y)
     end_point = (x + w, y + h)
     return start_point, end_point

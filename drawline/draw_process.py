@@ -1,6 +1,6 @@
 import cv2
 from drawline.color_process import get_color
-from drawline.utils import get_best_line_size, get_rect_from_poly
+from drawline.utils import get_best_line_size, get_rect_from_poly, prepare_val_contours, prepare_labels, prepare_points
 import numpy as np
 
 
@@ -16,7 +16,7 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
         font_scale = max([font_scale, min_font_scale])
 
     font_thickness = int(get_best_line_size(img) / 1.3)
-    print("thickenss: ", font_thickness, ", size: ", font_scale, ", line size: ", line_size)
+    # print("thickenss: ", font_thickness, ", size: ", font_scale, ", line size: ", line_size)
 
     # https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv
     # Customization of the top answer
@@ -46,20 +46,28 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
     return
 
 
-def draw_rect(image, start_point, end_point, rgb=None, thickness=None,
-              label=None, label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
+def draw_rect(image, points, rgb=None, thickness=None,
+              labels=None, label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
               random_color=True):
+    points = prepare_points(points)
+    labels = prepare_labels(points, labels)
     copy_image = image.copy()
-    if rgb is None:
-        rgb = get_color(label, 'draw_rect', is_random=random_color)
-    if thickness is None:
-        thickness = get_best_line_size(copy_image)
 
-    cv2.rectangle(copy_image, start_point, end_point, rgb, thickness)
-    if label is not None:
-        if label_bg_rgb is None:
-            label_bg_rgb = rgb
-        draw_text(copy_image, label, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb, font_scale=label_font_size)
+    for point, label in zip(points, labels):
+        xmin, ymin, xmax, ymax = point
+        start_point = (xmin, ymin)
+        end_point = (xmax, ymax)
+
+        if rgb is None:
+            rgb = get_color(label, 'draw_rect', is_random=random_color)
+        if thickness is None:
+            thickness = get_best_line_size(copy_image)
+
+        cv2.rectangle(copy_image, start_point, end_point, rgb, thickness)
+        if label is not None:
+            if label_bg_rgb is None:
+                label_bg_rgb = rgb
+            draw_text(copy_image, label, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb, font_scale=label_font_size)
     return copy_image
 
 
@@ -70,32 +78,36 @@ def fill_in_poly(contour, image, rgb, alpha=0.4):
     return image_new
 
 
-def draw_poly(image, contour, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, label=None, label_rgb=(255, 255, 255),
+def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, labels=None, label_rgb=(255, 255, 255),
               label_bg_rgb=None, label_font_size=None, random_color=True):
+
+    contours = prepare_val_contours(contours)
+    labels = prepare_labels(contours, labels)
     copy_image = image.copy()
-    if type(contour) == list:
-        contour = np.array(contour)
-    start_point, end_point = get_rect_from_poly(contour)
 
-    if rgb is None:
-        rgb = get_color(label, 'draw_rect', is_random=random_color)
-    if thickness is None:
-        thickness = get_best_line_size(copy_image)
+    for label, contour in zip(labels, contours):
+        if len(contour.shape) == 1:
+            continue
 
-    if show_rect:
-        cv2.rectangle(copy_image, start_point, end_point, rgb, thickness)
-    if label is not None:
-        if label_bg_rgb is None:
-            label_bg_rgb = rgb
-        draw_text(copy_image, label, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb,
-                  font_scale=label_font_size)
+        start_point, end_point = get_rect_from_poly(contour)
 
-    contour = np.squeeze(contour)
-    if fill_in:
-        copy_image = fill_in_poly(contour, copy_image, rgb, alpha=transparency)
+        if rgb is None:
+            rgb = get_color(label, 'draw_rect', is_random=random_color)
+        if thickness is None:
+            thickness = get_best_line_size(copy_image)
 
-    else:
+        if show_rect:
+            cv2.rectangle(copy_image, start_point, end_point, rgb, thickness)
+
+        if label is not None:
+            if label_bg_rgb is None:
+                label_bg_rgb = rgb
+            draw_text(copy_image, label, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb,
+                      font_scale=label_font_size)
+
         cv2.drawContours(copy_image, [contour], -1, rgb, thickness)
+        if fill_in:
+            copy_image = fill_in_poly(contour, copy_image, rgb, alpha=transparency)
 
     return copy_image
 
