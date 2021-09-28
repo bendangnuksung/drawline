@@ -49,6 +49,19 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
 def draw_rect(image, points, rgb=None, thickness=None,
               labels=None, label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
               random_color=True):
+    """
+    Draws rectangle from given coordinates
+    :param image: (Numpy) numpy matrix image
+    :param points: (List) List of rectangle coordinates: [[xmin, ymin, xmax, ymax]]
+    :param rgb: (Tuple) RGB values: (R, G, B)
+    :param thickness: (Integer) of line in px: eg: 2
+    :param labels: (List) list of strings: []
+    :param label_rgb: (Tuple) RGB text color for labels: (R,G,B)
+    :param label_bg_rgb: (Tuple) RGB label background color: (R,G,B)
+    :param label_font_size: (Integer) Font size of label in px: 2
+    :param random_color: (Boolean) pick random colors for lines.
+    :return: (numpy) image with rectangles
+    """
     points = prepare_points(points)
     labels = prepare_labels(points, labels)
     copy_image = image.copy()
@@ -80,6 +93,22 @@ def fill_in_poly(contour, image, rgb, alpha=0.4):
 
 def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, labels=None, label_rgb=(255, 255, 255),
               label_bg_rgb=None, label_font_size=None, random_color=True):
+    """
+    Draws polygon and fills in color from given contours
+    :param image: (Numpy) numpy matrix image
+    :param contours: (List) of contours
+    :param fill_in: (Boolean) fill color inside the polygon.
+    :param transparency: (Float) transparency of fill_in color.
+    :param rgb: RGB values: (Tuple) rgb color of line and polyfgon (R, G, B)
+    :param thickness: (Int) Thickness of line
+    :param show_rect: (Boolean) Show rectangle
+    :param labels: (List of strings) List of label names
+    :param label_rgb: (Tuple) RGB color of labels
+    :param label_bg_rgb: (Tuple) RGB color of Label background
+    :param label_font_size: (Int) Label font size
+    :param random_color: (Boolean) Randomize RGB color
+    :return:
+    """
 
     contours = prepare_val_contours(contours)
     labels = prepare_labels(contours, labels)
