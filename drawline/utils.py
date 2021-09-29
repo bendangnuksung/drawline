@@ -77,6 +77,8 @@ def random_resize(cimg):
     height, width = cimg.shape[:2]
     new_height = int(height * (1 + r))
     new_width = int(width * (1 + r))
+    new_height = max([new_height, 30])
+    new_width = max([new_width, 30])
     cimg = cv2.resize(cimg, (new_width, new_height))
     return cimg
 
@@ -148,3 +150,32 @@ def split_label_and_non_label_text(label):
     label = splitted[0]
     non_label = ' '.join(splitted[1:])
     return label, non_label
+
+
+# https://www.pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/
+def bb_intersection_over_union(boxA, boxB):
+    # determine the (x, y)-coordinates of the intersection rectangle
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+    # compute the area of intersection rectangle
+    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+    # compute the area of both the prediction and ground-truth
+    # rectangles
+    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+    # return the intersection over union value
+    return iou
+
+
+def is_coords_intersecting(new_coord, used_coords_list, max_threshold=0.6):
+    for coords in used_coords_list:
+        iou = bb_intersection_over_union(new_coord, coords)
+        if iou > max_threshold:
+            return True
+    return False

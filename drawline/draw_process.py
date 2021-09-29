@@ -1,12 +1,20 @@
 import cv2
 from drawline.color_process import get_color
 from drawline.utils import get_best_line_size, get_rect_from_poly, prepare_val_contours, prepare_labels, prepare_points
-from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size
+from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size, is_coords_intersecting
 import numpy as np
+
+COORDS_USED = []
+
+
+def reset_variables():
+    global COORDS_USED
+    COORDS_USED = []
 
 
 def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg=(0, 0, 0), font_scale=None, s=400,
-              font=cv2.FONT_HERSHEY_SIMPLEX, min_font_scale=0.35):
+              font=cv2.FONT_HERSHEY_SIMPLEX):
+    global RECT_LABEL_USED_COORDS, POLY_LABEL_USED_COORDS
     h_s = img.shape[0] / s
     w_s = img.shape[1] / s
     line_size = int((h_s + w_s) / 3)
@@ -33,8 +41,10 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
     end_rect_point = (x + text_w, y)
 
     # Label on top
-    if org[1] > 0:
+    intersecting = is_coords_intersecting([start_rect_point[0], start_rect_point[1], end_rect_point[0], end_rect_point[1]], COORDS_USED)
+    if org[1] > 0 and not intersecting:
         cv2.rectangle(img, start_rect_point, end_rect_point, text_color_bg, -line_size)
+        COORDS_USED.append([start_rect_point[0], start_rect_point[1], end_rect_point[0], end_rect_point[1]])
         cv2.putText(img, text, org, font, font_scale, text_color, font_thickness)
 
     # label on bottom
@@ -43,15 +53,17 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
         x, y = new_pos
         text_w, text_h = text_size
         cv2.rectangle(img, new_pos, (x + text_w, y + text_h), text_color_bg, -line_size)
+        # COORDS_USED.append([pos[0], pos_end[1], x + text_w, y + text_h])
         org = (x, int(y + text_h + font_scale - 1))
         cv2.putText(img, text, org, font, font_scale, text_color, font_thickness)
+
 
     return
 
 
 def draw_rect(image, points, rgb=None, thickness=None, labels=None,
               label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
-              random_color=True):
+              random_color=False):
     """
     Draws rectangle from given coordinates
     :param image: (Numpy) numpy matrix image
@@ -65,6 +77,8 @@ def draw_rect(image, points, rgb=None, thickness=None, labels=None,
     :param random_color: (Boolean) pick random colors for lines.
     :return: (numpy) image with rectangles
     """
+
+    reset_variables()
     points = prepare_points(points)
     labels = prepare_labels(points, labels)
     copy_image = image.copy()
@@ -105,7 +119,7 @@ def fill_in_poly(contour, image, rgb, alpha=0.4):
 
 
 def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, labels=None,
-              label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None, random_color=True):
+              label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None, random_color=False):
     """
     Draws polygon and fills in color from given contours
     :param image: (Numpy) numpy matrix image
@@ -122,7 +136,7 @@ def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickne
     :param random_color: (Boolean) Randomize RGB color
     :return:
     """
-
+    reset_variables()
     contours = prepare_val_contours(contours)
     labels = prepare_labels(contours, labels)
     copy_image = image.copy()

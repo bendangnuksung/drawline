@@ -19,15 +19,23 @@ import cv2
 img_pth = '/PATH/TO/IMAGE.jpg'
 image = cv2.imread(img_pth)
 
-# for rectangles
+# Single  Rectangle example
+result_image = draw_rect(image, [XMIN, YMIN, XMAX, YMAX], labels='label_1')
+
+# Multiple Rectangles example
 result_image = draw_rect(image,
-                         [[XMIN_1, YMIN_1, XMAX_1, YMAX_1], [XMIN_2, YMIN_2, XMAX_2, YMAX_2]],
+                         [[XMIN_1, YMIN_1, XMAX_1, YMAX_1],
+                          [XMIN_2, YMIN_2, XMAX_2, YMAX_2]],
                          labels=['Label_1', 'Label_2'])
 
 
-# for polygons
-result_image = draw_poly(image, CONTOURS,
-                         label=['label_1', 'label_2', ...]) 
+# Single Contours Polygon example 
+result_image = draw_poly(image, CONTOUR, label='label_1')
+
+# Multiple Contours Polygon points
+result_image = draw_poly(image, CONTOURS, label=['label_1', 'label_2', ...])
+
+# Assigning Labels is optional, if not given no label name will be displayed
 ```
 
 ### Default options
