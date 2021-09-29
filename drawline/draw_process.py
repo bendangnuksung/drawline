@@ -1,8 +1,8 @@
 import cv2
 from drawline.color_process import get_color
 from drawline.utils import get_best_line_size, get_rect_from_poly, prepare_val_contours, prepare_labels, prepare_points
-from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size, is_coords_intersecting
-import numpy as np
+from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size
+from drawline.utils import is_coords_intersecting, get_font_color
 
 COORDS_USED = []
 
@@ -12,57 +12,97 @@ def reset_variables():
     COORDS_USED = []
 
 
+def get_coords_for_labels(pos, pos_end, img, text, font, font_scale, font_thickness):
+    global COORDS_USED
+    height, width = img.shape[:2]
+    text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+    text_w, text_h = text_size
+    backup_result = None
+
+    # top left position
+    x, y = pos
+    text_pos = (int(x), int(y + font_scale - 1))
+    xmin = x
+    ymin = y - text_h
+    xmax = x + text_w
+    ymax = y
+    intersecting = is_coords_intersecting([xmin, ymin, xmax, ymax], COORDS_USED)
+    if not intersecting and text_pos[1] > 0:
+        COORDS_USED.append([xmin, ymin, xmax, ymax])
+        return [xmin, ymin, xmax, ymax], text_pos
+
+    if not intersecting:
+        backup_result = [xmin, ymin, xmax, ymax], text_pos
+
+    # top right position
+    x = pos_end[0] - text_w
+    y = pos[1]
+    text_pos = (int(x), int(y + font_scale - 1))
+    xmin = x
+    ymin = y - text_h
+    xmax = x + text_w
+    ymax = y
+    intersecting = is_coords_intersecting([xmin, ymin, xmax, ymax], COORDS_USED)
+    if not intersecting:
+        backup_result = [xmin, ymin, xmax, ymax], text_pos
+    if not intersecting and text_pos[1] > 0:
+        COORDS_USED.append([xmin, ymin, xmax, ymax])
+        return [xmin, ymin, xmax, ymax], text_pos
+
+    # bot left position
+    xmin = pos[0]
+    ymin = pos_end[1]
+    xmax = pos[0] + text_w
+    ymax = pos_end[1] + text_h
+    text_pos = (xmin, int(ymin + text_h + font_scale - 1))
+    intersecting = is_coords_intersecting([xmin, ymin, xmax, ymax], COORDS_USED)
+    if not intersecting and text_pos[1] < height:
+        COORDS_USED.append([xmin, ymin, xmax, ymax])
+        return [xmin, ymin, xmax, ymax], text_pos
+
+    if not intersecting:
+        backup_result = [xmin, ymin, xmax, ymax], text_pos
+
+    # bot right position
+    xmin = pos_end[0] - text_w
+    ymin = pos_end[1]
+    xmax = xmin + text_w
+    ymax = ymin + text_h
+    text_pos = (xmin, int(ymin + text_h + font_scale - 1))
+    intersecting = is_coords_intersecting([xmin, ymin, xmax, ymax], COORDS_USED)
+    if not intersecting and text_pos[1] < height:
+        COORDS_USED.append([xmin, ymin, xmax, ymax])
+        return [xmin, ymin, xmax, ymax], text_pos
+
+    if not intersecting:
+        backup_result = [xmin, ymin, xmax, ymax], text_pos
+
+    return backup_result
+
+
 def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg=(0, 0, 0), font_scale=None, s=400,
               font=cv2.FONT_HERSHEY_SIMPLEX):
-    global RECT_LABEL_USED_COORDS, POLY_LABEL_USED_COORDS
+
     h_s = img.shape[0] / s
     w_s = img.shape[1] / s
     line_size = int((h_s + w_s) / 3)
     line_size = max([line_size, 1])
 
-    font_thickness = int(get_best_font_thickness_line(img) / 1)
+    font_thickness = get_best_font_thickness_line(img)
     if font_scale is None:
         font_scale = get_best_font_size(font_thickness)
-        # highest_length = max(img.shape[:2])
-        # font_scale = highest_length / int(450 * 5)
-        # font_scale = max([font_scale, min_font_scale])
-        # font_scale = font_scale * 1.35
 
     # print("thickenss: ", font_thickness, ", size: ", font_scale, ", line size: ", line_size, ', img size: ', img.shape[:2], ' ', sum(img.shape[:2]))
 
-    # https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv
-    # Customization of the top answer
-    x, y = pos
-    text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
-    text_w, text_h = text_size
-
-    org = (int(x), int(y + font_scale - 1))
-    start_rect_point = (x, y - text_h)
-    end_rect_point = (x + text_w, y)
-
-    # Label on top
-    intersecting = is_coords_intersecting([start_rect_point[0], start_rect_point[1], end_rect_point[0], end_rect_point[1]], COORDS_USED)
-    if org[1] > 0 and not intersecting:
-        cv2.rectangle(img, start_rect_point, end_rect_point, text_color_bg, -line_size)
-        COORDS_USED.append([start_rect_point[0], start_rect_point[1], end_rect_point[0], end_rect_point[1]])
-        cv2.putText(img, text, org, font, font_scale, text_color, font_thickness)
-
-    # label on bottom
-    else:
-        new_pos = (pos[0], pos_end[1])
-        x, y = new_pos
-        text_w, text_h = text_size
-        cv2.rectangle(img, new_pos, (x + text_w, y + text_h), text_color_bg, -line_size)
-        # COORDS_USED.append([pos[0], pos_end[1], x + text_w, y + text_h])
-        org = (x, int(y + text_h + font_scale - 1))
-        cv2.putText(img, text, org, font, font_scale, text_color, font_thickness)
-
+    rect_coords, text_coords_pos = get_coords_for_labels(pos, pos_end, img, text, font, font_scale, font_thickness)
+    cv2.rectangle(img, (rect_coords[0], rect_coords[1]), (rect_coords[2], rect_coords[3]), text_color_bg, -line_size)
+    cv2.putText(img, text, text_coords_pos, font, font_scale, text_color, font_thickness)
 
     return
 
 
 def draw_rect(image, points, rgb=None, thickness=None, labels=None,
-              label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
+              label_rgb=None, label_bg_rgb=None, label_font_size=None,
               random_color=False):
     """
     Draws rectangle from given coordinates
@@ -86,6 +126,11 @@ def draw_rect(image, points, rgb=None, thickness=None, labels=None,
     rgb_flag = False if rgb is None else True
     thickness_flag = False if thickness is None else True
     label_bg_rgb_flag = False if label_bg_rgb is None else True
+    label_bg_flag = False if label_rgb is None else True
+
+    if rgb is not None:
+        # cvt RGB to BGR as cv2 uses BGR format
+        rgb = rgb[::-1]
 
     for point, label in zip(points, labels):
         xmin, ymin, xmax, ymax = point
@@ -107,6 +152,10 @@ def draw_rect(image, points, rgb=None, thickness=None, labels=None,
         if label is not None:
             if not label_bg_rgb_flag:
                 label_bg_rgb = rgb
+
+            if not label_bg_flag:
+                label_rgb = get_font_color(label_bg_rgb)
+
             draw_text(copy_image, label_non_label_combined, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb, font_scale=label_font_size)
     return copy_image
 
@@ -119,7 +168,7 @@ def fill_in_poly(contour, image, rgb, alpha=0.4):
 
 
 def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, labels=None,
-              label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None, random_color=False):
+              label_rgb=None, label_bg_rgb=None, label_font_size=None, random_color=False):
     """
     Draws polygon and fills in color from given contours
     :param image: (Numpy) numpy matrix image
@@ -143,6 +192,11 @@ def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickne
     rgb_flag = False if rgb is None else True
     thickness_flag = False if thickness is None else True
     label_bg_rgb_flag = False if label_bg_rgb is None else True
+    label_bg_flag = False if label_rgb is None else True
+
+    if rgb is not None:
+        # cvt RGB to BGR as cv2 uses BGR format
+        rgb = rgb[::-1]
 
     for label, contour in zip(labels, contours):
         if len(contour.shape) == 1:
@@ -168,6 +222,10 @@ def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickne
         if label is not None:
             if not label_bg_rgb_flag:
                 label_bg_rgb = rgb
+
+            if not label_bg_flag:
+                label_rgb = get_font_color(label_bg_rgb)
+
             draw_text(copy_image, label_non_label_combined, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb,
                       font_scale=label_font_size)
 

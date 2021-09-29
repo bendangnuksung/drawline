@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import random
 import numpy as np
 import cv2
+import math
 
 
 def display(img):
@@ -27,12 +28,12 @@ def get_biggest_contour(contours, reverse=False):
 def get_best_font_thickness_line(image):
     height, width = image.shape[:2]
     max_length = max([height, width])
-    size = int(max_length / 600)
-    #
-    # off = 4
-    # if size > off:
-    #     extra_offset = size - off
-    #     size = off + (extra_offset // 3)
+    size = int(max_length / 500)
+
+    off = 4
+    if size > off:
+        extra_offset = size - off
+        size = off + (extra_offset // 3)
 
     return size
 
@@ -59,8 +60,8 @@ def random_crop(image):
     start_x = random.randint(0, width // 1.8)
     start_y = random.randint(0, height // 1.8)
 
-    end_x = random.randint(width // 2, width)
-    end_y = random.randint(height // 2, height)
+    end_x = random.randint((width // 2) + 10, width)
+    end_y = random.randint((height // 2) + 10, height)
     image = image[start_y:end_y, start_x: end_x]
     return image
 
@@ -179,3 +180,28 @@ def is_coords_intersecting(new_coord, used_coords_list, max_threshold=0.6):
         if iou > max_threshold:
             return True
     return False
+
+
+# https://stackoverflow.com/questions/22603510/is-this-possible-to-detect-a-colour-is-a-light-or-dark-colour
+def is_color_light(rgb):
+    [r, g, b] = rgb
+    hsp = math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b))
+    if hsp > 127.5:
+        return True
+    else:
+        return False
+
+
+def get_font_color(bg_color):
+    light_color = is_color_light(bg_color)
+
+    if light_color:
+        return (0, 0, 0)
+    else:
+        return (255, 255, 255)
+
+
+if __name__ == '__main__':
+    rgb = (152,251,152)
+
+    print(is_color_light(rgb))

@@ -25,7 +25,12 @@ def test_poly(n=5):
             rects.append(rect)
 
         labels = [f'Label_{i}' for i in range(len(contours))]
-        test_image = draw_poly(test_image, contours, labels=labels)
+        # test single points
+        if i == 0:
+            test_image = draw_poly(test_image, contours[0], labels=labels[0])
+        else:
+            test_image = draw_poly(test_image, contours, labels=labels)
+
         display(test_image)
 
 
@@ -46,10 +51,13 @@ def test_rect(n=5):
             rects.append(rect)
 
         labels = [f'Label_{i}' for i in range(len(contours))]
-        test_image = draw_rect(test_image, rects, labels=labels)
+        if i == 0:
+            test_image = draw_rect(test_image, rects[0], labels=labels[0])
+        else:
+            test_image = draw_rect(test_image, rects, labels=labels)
         display(test_image)
 
 
 if __name__ == '__main__':
-    test_rect()
     test_poly()
+    test_rect()
