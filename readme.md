@@ -51,7 +51,8 @@ def draw_rect(image, points, rgb=None, thickness=None,
     """
     
     
-def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, labels=None, label_rgb=(255, 255, 255),
+def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, 
+              show_rect=True, labels=None, label_rgb=(255, 255, 255),
               label_bg_rgb=None, label_font_size=None, random_color=True):
     """
     Draws polygon and fills in color from given contours

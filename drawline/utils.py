@@ -114,10 +114,17 @@ def random_resize_and_crop(image):
 
 
 def get_rect_from_poly(contour):
-    try:
-        (x, y, w, h) = cv2.boundingRect(contour)
-    except Exception as e:
-        pass
+    (x, y, w, h) = cv2.boundingRect(contour)
     start_point = (x, y)
     end_point = (x + w, y + h)
     return start_point, end_point
+
+
+def split_label_and_non_label_text(label):
+    if label is None:
+        return None, None
+    label = label.strip()
+    splitted = label.split()
+    label = splitted[0]
+    non_label = ' '.join(splitted[1:])
+    return label, non_label
