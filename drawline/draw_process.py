@@ -1,7 +1,7 @@
 import cv2
 from drawline.color_process import get_color
 from drawline.utils import get_best_line_size, get_rect_from_poly, prepare_val_contours, prepare_labels, prepare_points
-from drawline.utils import split_label_and_non_label_text
+from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size
 import numpy as np
 
 
@@ -12,13 +12,15 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
     line_size = int((h_s + w_s) / 3)
     line_size = max([line_size, 1])
 
+    font_thickness = int(get_best_font_thickness_line(img) / 1)
     if font_scale is None:
-        highest_length = max(img.shape[:2])
-        font_scale = highest_length / int(450 * 5)
-        font_scale = max([font_scale, min_font_scale])
+        font_scale = get_best_font_size(font_thickness)
+        # highest_length = max(img.shape[:2])
+        # font_scale = highest_length / int(450 * 5)
+        # font_scale = max([font_scale, min_font_scale])
+        # font_scale = font_scale * 1.35
 
-    font_thickness = int(get_best_line_size(img) / 1.3)
-    # print("thickenss: ", font_thickness, ", size: ", font_scale, ", line size: ", line_size)
+    # print("thickenss: ", font_thickness, ", size: ", font_scale, ", line size: ", line_size, ', img size: ', img.shape[:2], ' ', sum(img.shape[:2]))
 
     # https://stackoverflow.com/questions/60674501/how-to-make-black-background-in-cv2-puttext-with-python-opencv
     # Customization of the top answer
@@ -32,7 +34,6 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
 
     # Label on top
     if org[1] > 0:
-        # print(org, start_rect_point, end_rect_point)
         cv2.rectangle(img, start_rect_point, end_rect_point, text_color_bg, -line_size)
         cv2.putText(img, text, org, font, font_scale, text_color, font_thickness)
 

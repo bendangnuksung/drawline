@@ -24,6 +24,26 @@ def get_biggest_contour(contours, reverse=False):
     return biggest_contour
 
 
+def get_best_font_thickness_line(image):
+    height, width = image.shape[:2]
+    max_length = max([height, width])
+    size = int(max_length / 600)
+    #
+    # off = 4
+    # if size > off:
+    #     extra_offset = size - off
+    #     size = off + (extra_offset // 3)
+
+    return size
+
+
+def get_best_font_size(font_thickness, r=0.4):
+    font_size = r * font_thickness
+    if font_size == 0:
+        font_size = r
+    return font_size
+
+
 def get_best_line_size(image):
     height, width = image.shape[:2]
     min_length = min([height, width])
