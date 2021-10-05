@@ -9,7 +9,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='drawline',
-    version='0.1.4',
+    version='0.2.0',
     packages=['drawline'],
     url='https://github.com/bendangnuksung/drawline',
     license='MIT License',
