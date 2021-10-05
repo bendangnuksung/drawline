@@ -2,7 +2,8 @@ import cv2
 from drawline.color_process import get_color
 from drawline.utils import get_best_line_size, get_rect_from_poly, prepare_val_contours, prepare_labels, prepare_points
 from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size
-from drawline.utils import is_coords_intersecting, get_font_color
+from drawline.utils import is_coords_intersecting
+from drawline.cv_utils import get_font_color, write_info_to_border
 
 COORDS_USED = []
 
@@ -80,9 +81,9 @@ def get_coords_for_labels(pos, pos_end, img, text, font, font_scale, font_thickn
     return backup_result
 
 
-def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg=(0, 0, 0), font_scale=None, s=400,
-              font=cv2.FONT_HERSHEY_SIMPLEX):
-
+def draw_text(img, text, pos, pos_end, label_transparency=0.4, text_color=(255, 255, 255), text_color_bg=(0, 0, 0),
+              font_scale=None, s=400, font=cv2.FONT_HERSHEY_SIMPLEX):
+    overlay = img.copy()
     h_s = img.shape[0] / s
     w_s = img.shape[1] / s
     line_size = int((h_s + w_s) / 3)
@@ -98,24 +99,29 @@ def draw_text(img, text, pos, pos_end, text_color=(255, 255, 255), text_color_bg
     cv2.rectangle(img, (rect_coords[0], rect_coords[1]), (rect_coords[2], rect_coords[3]), text_color_bg, -line_size)
     cv2.putText(img, text, text_coords_pos, font, font_scale, text_color, font_thickness)
 
-    return
+    img = cv2.addWeighted(overlay, label_transparency, img, 1 - label_transparency, 0)
+
+    return img
 
 
-def draw_rect(image, points, rgb=None, thickness=None, labels=None,
+def draw_rect(image, points, rgb=None, label_transparency=0.1, thickness=None, labels=None,
               label_rgb=None, label_bg_rgb=None, label_font_size=None,
-              random_color=False):
+              random_color=False, graph_mode=False):
     """
     Draws rectangle from given coordinates
     :param image: (Numpy) numpy matrix image
     :param points: (List) List of rectangle coordinates: [[xmin, ymin, xmax, ymax]]
     :param rgb: (Tuple) RGB values: (R, G, B)
+    :param label_transparency: (float) transparency for the labels
     :param thickness: (Integer) of line in px: eg: 2
     :param labels: (List) list of strings: []
     :param label_rgb: (Tuple) RGB text color for labels: (R,G,B)
     :param label_bg_rgb: (Tuple) RGB label background color: (R,G,B)
     :param label_font_size: (Integer) Font size of label in px: 2
     :param random_color: (Boolean) pick random colors for lines.
-    :return: (numpy) image with rectangles
+    :param graph_mode: (Boolean) Writes labels to a border instead in the image itself (Good to use when to many boxes obstructing the view)
+
+    :return: (numpy) drawn rectangles on image
     """
 
     reset_variables()
@@ -128,11 +134,14 @@ def draw_rect(image, points, rgb=None, thickness=None, labels=None,
     label_bg_rgb_flag = False if label_bg_rgb is None else True
     label_bg_flag = False if label_rgb is None else True
 
+    graph_labels_and_colors = {}
+    graph_text_labels = {}
+
     if rgb is not None:
         # cvt RGB to BGR as cv2 uses BGR format
         rgb = rgb[::-1]
 
-    for point, label in zip(points, labels):
+    for i, (point, label) in enumerate(zip(points, labels)):
         xmin, ymin, xmax, ymax = point
         start_point = (xmin, ymin)
         end_point = (xmax, ymax)
@@ -156,7 +165,18 @@ def draw_rect(image, points, rgb=None, thickness=None, labels=None,
             if not label_bg_flag:
                 label_rgb = get_font_color(label_bg_rgb)
 
-            draw_text(copy_image, label_non_label_combined, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb, font_scale=label_font_size)
+            if graph_mode:
+                graph_labels_and_colors[label] = label_bg_rgb
+                graph_text_labels[i] = label + ' ' + non_label
+                label_non_label_combined = str(i)
+
+            copy_image = draw_text(copy_image, label_non_label_combined, start_point, end_point,
+                                   label_transparency=label_transparency, text_color=label_rgb,
+                                   text_color_bg=label_bg_rgb, font_scale=label_font_size)
+
+    if graph_mode:
+        copy_image = write_info_to_border(copy_image, graph_labels_and_colors, graph_text_labels)
+
     return copy_image
 
 
@@ -167,14 +187,16 @@ def fill_in_poly(contour, image, rgb, alpha=0.4):
     return image_new
 
 
-def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, show_rect=True, labels=None,
-              label_rgb=None, label_bg_rgb=None, label_font_size=None, random_color=False):
+def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transparency=0.4, rgb=None, thickness=None,
+              show_rect=True, labels=None, label_rgb=None, label_bg_rgb=None, label_font_size=None, random_color=False,
+              graph_mode=False):
     """
     Draws polygon and fills in color from given contours
     :param image: (Numpy) numpy matrix image
     :param contours: (List) of contours
     :param fill_in: (Boolean) fill color inside the polygon.
-    :param transparency: (Float) transparency of fill_in color.
+    :param label_transparency: (float) transparency for the labels
+    :param fill_transparency: (Float) transparency of fill_in color.
     :param rgb: RGB values: (Tuple) rgb color of line and polyfgon (R, G, B)
     :param thickness: (Int) Thickness of line
     :param show_rect: (Boolean) Show rectangle
@@ -183,7 +205,9 @@ def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickne
     :param label_bg_rgb: (Tuple) RGB color of Label background
     :param label_font_size: (Int) Label font size
     :param random_color: (Boolean) Randomize RGB color
-    :return:
+    :param graph_mode: (Boolean) Writes labels to a border instead in the image itself (Good to use when to many boxes obstructing the view)
+
+    :return: (Numpy) drawn polygon on image
     """
     reset_variables()
     contours = prepare_val_contours(contours)
@@ -194,11 +218,14 @@ def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickne
     label_bg_rgb_flag = False if label_bg_rgb is None else True
     label_bg_flag = False if label_rgb is None else True
 
+    graph_labels_and_colors = {}
+    graph_text_labels = {}
+
     if rgb is not None:
         # cvt RGB to BGR as cv2 uses BGR format
         rgb = rgb[::-1]
 
-    for label, contour in zip(labels, contours):
+    for i, (label, contour) in enumerate(zip(labels, contours)):
         if len(contour.shape) == 1:
             continue
 
@@ -226,12 +253,21 @@ def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickne
             if not label_bg_flag:
                 label_rgb = get_font_color(label_bg_rgb)
 
-            draw_text(copy_image, label_non_label_combined, start_point, end_point, text_color=label_rgb, text_color_bg=label_bg_rgb,
-                      font_scale=label_font_size)
+            if graph_mode:
+                graph_labels_and_colors[label] = label_bg_rgb
+                graph_text_labels[i] = label + ' ' + non_label
+                label_non_label_combined = str(i)
+
+            copy_image = draw_text(copy_image, label_non_label_combined, start_point, end_point,
+                                   label_transparency=label_transparency, text_color=label_rgb,
+                                   text_color_bg=label_bg_rgb, font_scale=label_font_size)
 
         cv2.drawContours(copy_image, [contour], -1, rgb, thickness)
         if fill_in:
-            copy_image = fill_in_poly(contour, copy_image, rgb, alpha=transparency)
+            copy_image = fill_in_poly(contour, copy_image, rgb, alpha=fill_transparency)
+
+    if graph_mode:
+        copy_image = write_info_to_border(copy_image, graph_labels_and_colors, graph_text_labels)
 
     return copy_image
 

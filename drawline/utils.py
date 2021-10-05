@@ -1,8 +1,9 @@
+import math
+
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 import cv2
-import math
 
 
 def display(img):
@@ -38,7 +39,7 @@ def get_best_font_thickness_line(image):
     return size
 
 
-def get_best_font_size(font_thickness, r=0.4):
+def get_best_font_size(font_thickness, r=0.5):
     font_size = r * font_thickness
     if font_size == 0:
         font_size = r
@@ -96,6 +97,25 @@ def prepare_points(points):
     return new_points
 
 
+def get_contour_areas(contours):
+    all_areas = []
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        all_areas.append(area)
+    return all_areas
+
+
+def sort_contours_by_area(contours):
+    temp = []
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        temp.append([area, cnt])
+    sorted_contours = sorted(temp, key=lambda x: x[0], reverse=True)
+    sorted_contours = np.array(sorted_contours)
+    sorted_contours = list(sorted_contours[:, 1])
+    return sorted_contours
+
+
 def prepare_val_contours(contours):
     if type(contours) == list:
         contours = np.array(contours)
@@ -114,6 +134,7 @@ def prepare_val_contours(contours):
             print("Contour shape not proper: ", contours.shape)
         new_contours.append(contours)
 
+    new_contours = sort_contours_by_area(new_contours)
     return new_contours
 
 
@@ -181,7 +202,6 @@ def is_coords_intersecting(new_coord, used_coords_list, max_threshold=0.6):
             return True
     return False
 
-
 # https://stackoverflow.com/questions/22603510/is-this-possible-to-detect-a-colour-is-a-light-or-dark-colour
 def is_color_light(rgb):
     [r, g, b] = rgb
@@ -190,15 +210,6 @@ def is_color_light(rgb):
         return True
     else:
         return False
-
-
-def get_font_color(bg_color):
-    light_color = is_color_light(bg_color)
-
-    if light_color:
-        return (0, 0, 0)
-    else:
-        return (255, 255, 255)
 
 
 if __name__ == '__main__':
