@@ -212,7 +212,7 @@ def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transp
     reset_variables()
     contours = prepare_val_contours(contours)
     labels = prepare_labels(contours, labels)
-    contours = sort_contours_by_area(contours)
+    contours, labels = sort_contours_by_area(contours, labels)
     copy_image = image.copy()
     rgb_flag = False if rgb is None else True
     thickness_flag = False if thickness is None else True

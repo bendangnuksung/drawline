@@ -105,15 +105,16 @@ def get_contour_areas(contours):
     return all_areas
 
 
-def sort_contours_by_area(contours):
+def sort_contours_by_area(contours, labels):
     temp = []
-    for cnt in contours:
+    for cnt, label in zip(contours, labels):
         area = cv2.contourArea(cnt)
-        temp.append([area, cnt])
+        temp.append([area, cnt, label])
     sorted_contours = sorted(temp, key=lambda x: x[0], reverse=True)
     sorted_contours = np.array(sorted_contours)
+    sorted_labels = list(sorted_contours[:, 2])
     sorted_contours = list(sorted_contours[:, 1])
-    return sorted_contours
+    return sorted_contours, sorted_labels
 
 
 def prepare_val_contours(contours):
