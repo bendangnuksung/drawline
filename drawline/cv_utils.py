@@ -121,8 +121,8 @@ def write_body_on_border(image, border_image, labels_and_colors, text_info, body
 
     cropped_image_height, cropped_image_width = cropped_image.shape[:2]
 
-    start_x = 0 + int(border_image.shape[1] * 0.1)
-    start_y = 0 + int(border_image.shape[1] * 0.1)
+    start_x = 0 + int(border_image.shape[1] * 0.07)
+    start_y = 0 + int(border_image.shape[1] * 0.07)
 
     last_x = start_x
     last_y = start_y
@@ -130,20 +130,45 @@ def write_body_on_border(image, border_image, labels_and_colors, text_info, body
     col_offset = 0
     row_offset = text_h // 2
 
+    len_str_items = len(str(len(text_info))) + 2
+
     for number, text in text_info.items():
+        org_text = text
         label_name, _ = split_label_and_non_label_text(text)
         rgb = labels_and_colors[label_name]
-        number_string = str(number) + ' '
+        str_number = str(number)
+        number_string = str_number + ' '*(len_str_items - len(str_number))
         text = ' '*len(number_string) + text
         text_size, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
         text_w, text_h = text_size
+        single_text_w = text_w / len(text)
         last_y = last_y + text_h
         text_coords_pos = (last_x, last_y)
+
+        color_coords_pos = (last_x + int(len(number_string) * single_text_w), last_y)
         # print(text_coords_pos, text_h, font_scale, font_thickness)
         cropped_image = extend_border_width(cropped_image, last_x + text_w)
 
-        cv2.putText(cropped_image, text, text_coords_pos, cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness)
-        cv2.putText(cropped_image, number_string, text_coords_pos, cv2.FONT_HERSHEY_SIMPLEX, font_scale, rgb, font_thickness)
+        color_rect_xmin = color_coords_pos[0]
+        color_rect_ymin = color_coords_pos[1] - text_h
+        color_rect_xmax = color_coords_pos[0] + (single_text_w * len(org_text))
+        color_rect_ymax = color_coords_pos[1]
+
+        try:
+            padded_xmin = int(color_rect_xmin - (text_w * 0.025))
+            padded_ymin = int(color_rect_ymin - (text_h * 0.25))
+            padded_xmax = int(color_rect_xmax + (text_w * 0.025))
+            padded_ymax = int(color_rect_ymax + (text_h * 0.25))
+            cropped_image = cv2.rectangle(cropped_image, (padded_xmin, padded_ymin), (padded_xmax, padded_ymax), rgb, -1)
+
+        except Exception as e:
+            print(e)
+            cropped_image = cv2.rectangle(cropped_image, (color_rect_xmin, color_rect_ymin), (color_rect_xmax, color_rect_ymax), rgb, -1)
+
+        font_color = get_font_color(rgb)
+        cv2.putText(cropped_image, text, text_coords_pos, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_color, font_thickness)
+        cv2.putText(cropped_image, number_string, text_coords_pos, cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0,0,0),
+                    font_thickness)
 
         last_y += row_offset + text_h
 

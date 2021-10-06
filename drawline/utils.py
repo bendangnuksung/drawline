@@ -134,7 +134,6 @@ def prepare_val_contours(contours):
             print("Contour shape not proper: ", contours.shape)
         new_contours.append(contours)
 
-    new_contours = sort_contours_by_area(new_contours)
     return new_contours
 
 

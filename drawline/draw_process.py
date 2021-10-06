@@ -2,7 +2,7 @@ import cv2
 from drawline.color_process import get_color
 from drawline.utils import get_best_line_size, get_rect_from_poly, prepare_val_contours, prepare_labels, prepare_points
 from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size
-from drawline.utils import is_coords_intersecting
+from drawline.utils import is_coords_intersecting, sort_contours_by_area
 from drawline.cv_utils import get_font_color, write_info_to_border
 
 COORDS_USED = []
@@ -141,7 +141,7 @@ def draw_rect(image, points, rgb=None, label_transparency=0.1, thickness=None, l
         # cvt RGB to BGR as cv2 uses BGR format
         rgb = rgb[::-1]
 
-    for i, (point, label) in enumerate(zip(points, labels)):
+    for i, (point, label) in enumerate(zip(points, labels), 1):
         xmin, ymin, xmax, ymax = point
         start_point = (xmin, ymin)
         end_point = (xmax, ymax)
@@ -212,6 +212,7 @@ def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transp
     reset_variables()
     contours = prepare_val_contours(contours)
     labels = prepare_labels(contours, labels)
+    contours = sort_contours_by_area(contours)
     copy_image = image.copy()
     rgb_flag = False if rgb is None else True
     thickness_flag = False if thickness is None else True
@@ -225,7 +226,7 @@ def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transp
         # cvt RGB to BGR as cv2 uses BGR format
         rgb = rgb[::-1]
 
-    for i, (label, contour) in enumerate(zip(labels, contours)):
+    for i, (label, contour) in enumerate(zip(labels, contours), 1):
         if len(contour.shape) == 1:
             continue
 

@@ -2,10 +2,10 @@ import random
 
 random.seed(77)
 
-DISTINGUISHABLE_COLORS = [(20, 255, 20), (255, 225, 25), (191, 239, 69), (0, 0, 117), (70, 153, 144), (128, 128, 0),
-                        (230, 25, 75), (154, 99, 36), (128, 0, 0), (60, 180, 75), (66, 212, 244), (67, 99, 216),
+DISTINGUISHABLE_COLORS = [(100, 255, 100), (255, 225, 25), (0, 0, 117), (70, 153, 144), (230, 25, 75), (128, 128, 0), (66, 212, 244),
+                        (128, 0, 0), (60, 180, 75),
                           (145, 30, 180), (169, 169, 169), (250, 190, 212), (255, 216, 177),
-                          (255, 250, 200), (170, 255, 195), (220, 190, 255)]
+                          (170, 255, 195), (220, 190, 255)]
 
 RGB_COLLECTION_ADDONS = [(0, 255, 127), (250, 128, 114), (25, 25, 112), (60, 179, 113), (216, 191, 216), (211, 211, 211),
                   (255, 127, 80), (169, 169, 169), (238, 130, 238), (70, 130, 180), (255, 240, 245), (85, 107, 47),
@@ -82,6 +82,7 @@ def select_color_based_on_labels(label_name, draw_type, is_random):
                     rgb = temp_rgb
                     LABELS[draw_type][LABELS_KEY][label_name] = rgb
                     LABELS[draw_type][ALL_RGB_COLORS_TAKEN].append(rgb)
+                    break
         else:
             rgb = random.choice(RGB_COLLECTION)
             LABELS[draw_type][LABELS_KEY][label_name] = rgb
@@ -97,7 +98,7 @@ def get_color(label_name, draw_type, is_random=False):
         LABELS[draw_type] = {ALL_RGB_COLORS_TAKEN: [], LABELS_KEY: {}}
 
     if label_name is None:
-        return RGB_COLLECTION[0]
+        return RGB_COLLECTION[0][::-1]
 
     if label_name not in LABELS[draw_type][LABELS_KEY]:
         rgb = select_color_based_on_labels(label_name, draw_type, is_random)
