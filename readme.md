@@ -11,7 +11,7 @@ It auto handles color picking for labels, font size, line thickness. (User has o
 pip install drawline
 ```
 
-### Screenshots
+
 ![Poly normal](https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_normal.png)
 ![Poly graph](https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_graph.png)
 ![Rect normal](https://github.com/bendangnuksung/drawline/raw/master/screenshots/rect_normal.png)
