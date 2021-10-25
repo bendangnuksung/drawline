@@ -146,6 +146,11 @@ def draw_rect(image, points, rgb=None, label_transparency=0.1, thickness=None, l
 
     for i, (point, label) in enumerate(zip(points, labels), 1):
         xmin, ymin, xmax, ymax = point
+        if xmin > xmax:
+            xmin, xmax = xmax, xmin
+        if ymin > ymax:
+            ymin, ymax = ymax, ymin
+
         start_point = (xmin, ymin)
         end_point = (xmax, ymax)
         label, non_label = split_label_and_non_label_text(label)
