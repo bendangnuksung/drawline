@@ -1,6 +1,6 @@
 ## Drawline
 
-If you are tired to always search how to overlay box/polygons into the images and have to trial-and-error to get the right Font size, thickness or lines and what not.
+If you are tired to always search how to overlay box/polygons into the images and trial-and-error to get the right Font size, thickness or lines and what not.
 Then this is for people like us. 
 
 Drawline overlays polygon contours and rectangle on images with minimum effort.
@@ -11,7 +11,16 @@ It auto handles color picking for labels, font size, line thickness. (User has o
 pip install drawline
 ```
 
+### Screenshots
+![Poly normal](https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_normal.png)
+![Poly graph](https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_graph.png)
+![Rect normal](https://github.com/bendangnuksung/drawline/raw/master/screenshots/rect_normal.png)
+
+
 ### How to use
+
+Example: [Notebook Example](https://github.com/bendangnuksung/drawline/blob/master/examples/example.ipynb)
+
 ```python
 from drawline import draw_poly, draw_rect
 import cv2
@@ -41,33 +50,38 @@ result_image = draw_poly(image, CONTOURS, label=['label_1', 'label_2', ...])
 ### Default options
 
 ```python
-def draw_rect(image, points, rgb=None, thickness=None,
-              labels=None, label_rgb=(255, 255, 255), label_bg_rgb=None, label_font_size=None,
-              random_color=True):
+def draw_rect(image, points, rgb=None, label_transparency=0.1, thickness=None, labels=None,
+              label_rgb=None, label_bg_rgb=None, label_font_size=None,
+              random_color=False, graph_mode=False):
     """
     Draws rectangle from given coordinates
     :param image: (Numpy) numpy matrix image
     :param points: (List) List of rectangle coordinates: [[xmin, ymin, xmax, ymax]]
     :param rgb: (Tuple) RGB values: (R, G, B)
+    :param label_transparency: (float) transparency for the labels
     :param thickness: (Integer) of line in px: eg: 2
     :param labels: (List) list of strings: []
     :param label_rgb: (Tuple) RGB text color for labels: (R,G,B)
     :param label_bg_rgb: (Tuple) RGB label background color: (R,G,B)
     :param label_font_size: (Integer) Font size of label in px: 2
     :param random_color: (Boolean) pick random colors for lines.
-    :return: (numpy) image with rectangles
+    :param graph_mode: (Boolean) Writes labels to a border instead in the image itself (Good to use when to many boxes
+     obstructing the view)
+
+    :return: (numpy) drawn rectangles on image
     """
     
     
-def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickness=None, 
-              show_rect=True, labels=None, label_rgb=(255, 255, 255),
-              label_bg_rgb=None, label_font_size=None, random_color=True):
+def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transparency=0.4, rgb=None, thickness=None,
+              show_rect=True, labels=None, label_rgb=None, label_bg_rgb=None, label_font_size=None, random_color=False,
+              graph_mode=False):
     """
     Draws polygon and fills in color from given contours
     :param image: (Numpy) numpy matrix image
     :param contours: (List) of contours
     :param fill_in: (Boolean) fill color inside the polygon.
-    :param transparency: (Float) transparency of fill_in color.
+    :param label_transparency: (float) transparency for the labels
+    :param fill_transparency: (Float) transparency of fill_in color.
     :param rgb: RGB values: (Tuple) rgb color of line and polyfgon (R, G, B)
     :param thickness: (Int) Thickness of line
     :param show_rect: (Boolean) Show rectangle
@@ -76,7 +90,10 @@ def draw_poly(image, contours, fill_in=True, transparency=0.4, rgb=None, thickne
     :param label_bg_rgb: (Tuple) RGB color of Label background
     :param label_font_size: (Int) Label font size
     :param random_color: (Boolean) Randomize RGB color
-    :return:
+    :param graph_mode: (Boolean) Writes labels to a border instead in the image itself (Good to use when to many boxes
+     obstructing the view)
+
+    :return: (Numpy) drawn polygon on image
     """
 ```
 
