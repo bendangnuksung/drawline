@@ -109,6 +109,7 @@ def get_contour_areas(contours):
 def sort_contours_by_area(contours, labels):
     temp = []
     for cnt, label in zip(contours, labels):
+        cnt = cnt.astype(np.int)
         area = cv2.contourArea(cnt)
         temp.append([area, cnt, label])
     sorted_contours = sorted(temp, key=lambda x: x[0], reverse=True)

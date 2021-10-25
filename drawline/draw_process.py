@@ -6,6 +6,7 @@ from drawline.utils import is_coords_intersecting, sort_contours_by_area
 from drawline.cv_utils import get_font_color, write_info_to_border
 from drawline.utils import labelme_to_contours, labelme_to_rect_points
 import json
+import numpy as np
 
 COORDS_USED = []
 
@@ -260,6 +261,13 @@ def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transp
                 graph_labels_and_colors[label] = label_bg_rgb
                 graph_text_labels[i] = label + ' ' + non_label
                 label_non_label_combined = str(i)
+
+            if not show_rect:
+                all_x, all_y = contour[:, 0], contour[:, 1]
+                min_y_index = np.where(all_y == (min(all_y)))[0][0]
+                max_y_index = np.where(all_y == (max(all_y)))[0][0]
+                start_point = contour[min_y_index]
+                end_point = contour[max_y_index]
 
             copy_image = draw_text(copy_image, label_non_label_combined, start_point, end_point,
                                    label_transparency=label_transparency, text_color=label_rgb,
