@@ -4,6 +4,8 @@ from drawline.utils import get_best_line_size, get_rect_from_poly, prepare_val_c
 from drawline.utils import split_label_and_non_label_text, get_best_font_thickness_line, get_best_font_size
 from drawline.utils import is_coords_intersecting, sort_contours_by_area
 from drawline.cv_utils import get_font_color, write_info_to_border
+from drawline.utils import labelme_to_contours, labelme_to_rect_points
+import json
 
 COORDS_USED = []
 
@@ -137,9 +139,9 @@ def draw_rect(image, points, rgb=None, label_transparency=0.1, thickness=None, l
     graph_labels_and_colors = {}
     graph_text_labels = {}
 
-    if rgb is not None:
-        # cvt RGB to BGR as cv2 uses BGR format
-        rgb = rgb[::-1]
+    # if rgb is not None:
+    #     # cvt RGB to BGR as cv2 uses BGR format
+    #     rgb = rgb[::-1]
 
     for i, (point, label) in enumerate(zip(points, labels), 1):
         xmin, ymin, xmax, ymax = point
@@ -222,9 +224,9 @@ def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transp
     graph_labels_and_colors = {}
     graph_text_labels = {}
 
-    if rgb is not None:
-        # cvt RGB to BGR as cv2 uses BGR format
-        rgb = rgb[::-1]
+    # if rgb is not None:
+    #     # cvt RGB to BGR as cv2 uses BGR format
+    #     rgb = rgb[::-1]
 
     for i, (label, contour) in enumerate(zip(labels, contours), 1):
         if len(contour.shape) == 1:
@@ -271,4 +273,60 @@ def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transp
         copy_image = write_info_to_border(copy_image, graph_labels_and_colors, graph_text_labels)
 
     return copy_image
+
+
+def draw_labelme(image, labelme_dict, fill_in=True, label_transparency=0.1, fill_transparency=0.4, rgb=None, thickness=None,
+              show_rect=True, labels=None, label_rgb=None, label_bg_rgb=None, label_font_size=None, random_color=False,
+              graph_mode=False):
+    """
+    Draws polygon or rectangle from the LabelMe annotation file
+    :param image: (Numpy) numpy matrix image
+    :param labelme_dict: (str or dict) path to the LabelMe json file path or dictionary
+    :param fill_in: (Boolean) fill color inside the polygon.
+    :param label_transparency: (float) transparency for the labels
+    :param fill_transparency: (Float) transparency of fill_in color.
+    :param rgb: RGB values: (Tuple) rgb color of line and polyfgon (R, G, B)
+    :param thickness: (Int) Thickness of line
+    :param show_rect: (Boolean) Show rectangle
+    :param labels: (List of strings) List of label names
+    :param label_rgb: (Tuple) RGB color of labels
+    :param label_bg_rgb: (Tuple) RGB color of Label background
+    :param label_font_size: (Int) Label font size
+    :param random_color: (Boolean) Randomize RGB color
+    :param graph_mode: (Boolean) Writes labels to a border instead in the image itself (Good to use when to many boxes obstructing the view)
+
+    :return: (Numpy) drawn polygon on image
+    """
+
+    assert type(labelme_dict) in [dict, str], "labelme_dict type should be either 1. (str) Path of the json file or 2. (dict) Json loaded"
+
+    if type(labelme_dict) == str:
+        with open(labelme_dict) as f:
+            labelme_dict = json.load(f)
+        # labelme_dict = json.load(open(labelme_dict))
+
+    try:
+        shape_type = labelme_dict["shapes"][0]["shape_type"]
+    except Exception as e:
+        shape_type = None
+
+    if shape_type == "polygon":
+        contours, labels_text = labelme_to_contours(labelme_dict)
+        draw_image = draw_poly(image, contours, fill_in=fill_in, label_transparency=label_transparency,
+                               fill_transparency=fill_transparency, rgb=rgb, thickness=thickness, show_rect=show_rect,
+                               labels=labels_text, label_rgb=label_rgb, label_bg_rgb=label_bg_rgb,
+                               label_font_size=label_font_size, random_color=random_color, graph_mode=graph_mode)
+
+    elif shape_type == "rectangle":
+        points, labels_text = labelme_to_rect_points(labelme_dict)
+        draw_image = draw_rect(image, points, labels=labels_text, rgb=rgb, label_transparency=label_transparency,
+                               thickness=thickness, label_rgb=label_rgb, label_bg_rgb=label_bg_rgb,
+                               label_font_size=label_font_size,random_color=random_color, graph_mode=graph_mode)
+
+    else:
+        draw_image = image
+
+    return draw_image
+
+
 

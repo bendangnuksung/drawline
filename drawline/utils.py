@@ -7,6 +7,7 @@ import cv2
 
 
 def display(img):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     plt.imshow(img)
     plt.show()
 
@@ -118,7 +119,7 @@ def sort_contours_by_area(contours, labels):
 
 
 def prepare_val_contours(contours):
-    if type(contours) == list:
+    if type(contours) in [list, tuple]:
         contours = np.array(contours)
 
     new_contours = []
@@ -152,7 +153,11 @@ def prepare_labels(contours, labels):
 
 def random_resize_and_crop(image):
     cimg = image.copy()
-    cimg = random_crop(cimg)
+    while True:
+        tmp = random_crop(cimg)
+        if tmp.shape[0] > 0 and tmp.shape[1] > 0:
+            cimg = tmp
+            break
     cimg = random_resize(cimg)
     return cimg
 
@@ -202,6 +207,7 @@ def is_coords_intersecting(new_coord, used_coords_list, max_threshold=0.6):
             return True
     return False
 
+
 # https://stackoverflow.com/questions/22603510/is-this-possible-to-detect-a-colour-is-a-light-or-dark-colour
 def is_color_light(rgb):
     [r, g, b] = rgb
@@ -210,6 +216,38 @@ def is_color_light(rgb):
         return True
     else:
         return False
+
+
+def labelme_classify(l_dict):
+    l_type = l_dict['shapes'][0]['shape_type']
+    if l_type is None:
+        return 'empty'
+    elif l_type == 'rectangle':
+        return 'rectangle'
+    elif l_type == 'polygon':
+        return 'polygon'
+
+
+def labelme_to_contours(l_dict):
+    labels = []
+    contours = []
+    for s in l_dict['shapes']:
+        label = s['label']
+        contour = s['points']
+        labels.append(label)
+        contours.append(contour)
+    return contours, labels
+
+
+def labelme_to_rect_points(l_dict):
+    labels = []
+    points = []
+    for s in l_dict['shapes']:
+        label = s['label']
+        point = [int(s['points'][0][0]), int(s['points'][0][1]), int(s['points'][1][0]), int(s['points'][1][1])]
+        labels.append(label)
+        points.append(point)
+    return points, labels
 
 
 if __name__ == '__main__':

@@ -58,7 +58,7 @@ def write_header_on_border(image, border_image, labels_and_colors, height_percen
     color_palette_size = (int(text_h/1), int(text_h/1))
 
     start_x = 0 + int(border_image.shape[1] * 0.1)
-    start_y = 0 + int(border_image.shape[1] * 0.1)
+    start_y = 0 + int(border_image.shape[1] * 0.15)
 
     last_x = start_x
     last_y = start_y
@@ -71,11 +71,12 @@ def write_header_on_border(image, border_image, labels_and_colors, height_percen
         label = '  ' + label
         text_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
         text_w, text_h = text_size
+        single_text_w = text_w / len(label)
 
         last_y = last_y + text_h
         text_coords_pos = (last_x, last_y)
         # print(text_coords_pos, text_h, font_scale, font_thickness)
-        cropped_image = extend_border_width(cropped_image, last_x + text_w)
+        cropped_image = extend_border_width(cropped_image, last_x + text_w + int(single_text_w * 2))
 
         cv2.putText(cropped_image, label, text_coords_pos, cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness)
         palette_xmin = last_x
@@ -121,8 +122,8 @@ def write_body_on_border(image, border_image, labels_and_colors, text_info, body
 
     cropped_image_height, cropped_image_width = cropped_image.shape[:2]
 
-    start_x = 0 + int(border_image.shape[1] * 0.07)
-    start_y = 0 + int(border_image.shape[1] * 0.07)
+    start_x = text_h #int(border_image.shape[1] * 0.07)
+    start_y = text_h #int(border_image.shape[0] * 0.1)
 
     last_x = start_x
     last_y = start_y
@@ -147,7 +148,7 @@ def write_body_on_border(image, border_image, labels_and_colors, text_info, body
 
         color_coords_pos = (last_x + int(len(number_string) * single_text_w), last_y)
         # print(text_coords_pos, text_h, font_scale, font_thickness)
-        cropped_image = extend_border_width(cropped_image, last_x + text_w)
+        cropped_image = extend_border_width(cropped_image, last_x + text_w + int(single_text_w*2))
 
         color_rect_xmin = color_coords_pos[0]
         color_rect_ymin = color_coords_pos[1] - text_h
@@ -190,7 +191,25 @@ def write_body_on_border(image, border_image, labels_and_colors, text_info, body
     return border_image
 
 
+def add_padding(image):
+    height, width = image.shape[:2]
+    if height == width:
+        return image
+
+    elif height > width:
+        to_add = (height - width) // 2
+        width_padding = np.ones([height, to_add, 3], dtype=np.uint8) * 255
+        image = np.concatenate([width_padding, image, width_padding], axis=1)
+
+    else:
+        to_add = (width - height) // 2
+        height_padding = np.ones([to_add, width, 3], dtype=np.uint8) * 255
+        image = np.concatenate([height_padding, image, height_padding], axis=0)
+    return image
+
+
 def write_info_to_border(image, labels_and_colors, text_info, border_percen=0.2, header_percen=0.3):
+    image = add_padding(image)
     border_image = get_border_image(image, border_percen)
     body_percen = 1 - header_percen
     border_image = write_header_on_border(image, border_image, labels_and_colors, height_percen=header_percen)
