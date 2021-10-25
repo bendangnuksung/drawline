@@ -19,7 +19,8 @@ pip install drawline
 
 ### How to use
 
-Example: [Notebook Example](https://nbviewer.org/github/bendangnuksung/drawline/blob/master/examples/example.ipynb)
+Example: [Notebook Example (NB viewer)](https://nbviewer.org/github/bendangnuksung/drawline/blob/master/examples/example.ipynb) or [Github Viewer](https://github.com/bendangnuksung/drawline/blob/master/examples/example.ipynb) 
+
 
 ```python
 from drawline import draw_poly, draw_rect
