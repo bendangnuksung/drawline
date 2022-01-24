@@ -35,6 +35,7 @@ def get_coords_for_labels(pos, pos_end, img, text, font, font_scale, font_thickn
         COORDS_USED.append([xmin, ymin, xmax, ymax])
         return [xmin, ymin, xmax, ymax], text_pos
 
+    default_backup_result = [xmin, ymin, xmax, ymax], text_pos
     if not intersecting:
         backup_result = [xmin, ymin, xmax, ymax], text_pos
 
@@ -81,6 +82,9 @@ def get_coords_for_labels(pos, pos_end, img, text, font, font_scale, font_thickn
     if not intersecting:
         backup_result = [xmin, ymin, xmax, ymax], text_pos
 
+    if backup_result is None:
+        backup_result = default_backup_result
+
     return backup_result
 
 
@@ -98,7 +102,9 @@ def draw_text(img, text, pos, pos_end, label_transparency=0.4, text_color=(255, 
 
     # print("thickenss: ", font_thickness, ", size: ", font_scale, ", line size: ", line_size, ', img size: ', img.shape[:2], ' ', sum(img.shape[:2]))
 
+
     rect_coords, text_coords_pos = get_coords_for_labels(pos, pos_end, img, text, font, font_scale, font_thickness)
+
     cv2.rectangle(img, (rect_coords[0], rect_coords[1]), (rect_coords[2], rect_coords[3]), text_color_bg, -line_size)
     cv2.putText(img, text, text_coords_pos, font, font_scale, text_color, font_thickness)
 
