@@ -8,20 +8,41 @@ Say goodbye to endless searching and trial-and-error with image overlays! Drawli
 pip install drawline
 ```
 
+
 ### Screenshots
 1. **Polygon draw (Normal mode)**: Good to use when there are less number of polygons to draw.
 
 <img src="https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_norect.png" alt="Cloud Image" width="50%" heigh="50%" title="Poly normal">
 &nbsp;
 
+```python
+# Go to 'How to Use' section for detail code
+result_image = draw_poly(image, {YOUR_CONTOURS}, label={YOUR_LABELS}, graph_mode=False, show_rect=False)
+```
+&nbsp;
+
+
 2. **Polygon draw (Graph mode)**: Good to use when there are many number of polygons to draw. Overcomes the overlay labels problem.
 
 <img src = "https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_normal.png" height="50%" width ="50%" /> <img src = "https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_graph.png" height="75%" width ="75%" />
 &nbsp;
+&nbsp;
+
+```python
+# Go to 'How to Use' section for detail code
+result_image = draw_poly(image, {YOUR_CONTOURS}, label={YOUR_LABELS}, graph_mode=True)
+```
+
+&nbsp;
 
 3. **Rectangle draw (normal mode)**: You can also simlpy draw a rectangle instead of polygon.
+
 <img src="https://github.com/bendangnuksung/drawline/raw/master/screenshots/rect_normal.png" alt="Rect normal" width="50%" heigh="50%" title="Rect normal">
 
+```python
+# Go to 'How to Use' section for detail code
+result_image = draw_rect(image, {YOUR_RECTANGLE_COORDINATES}, label={YOUR_LABELS})
+```
 
 ## How to use
 ---
