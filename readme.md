@@ -1,25 +1,35 @@
-## Drawline
+# Drawline
 
-If you are tired to always search how to overlay box/polygons into the images and trial-and-error to get the right Font size, thickness or lines and what not.
-Then this is for people like us. 
+Say goodbye to endless searching and trial-and-error with image overlays! Drawline makes it effortless to overlay polyggon contours, rectangles and even auto-handles label colors, font size and line thickness. With the option to override, Drawline takes the hassle out of image drawing customization
 
-Drawline overlays polygon contours and rectangle on images with minimum effort.
-It auto handles color picking for labels, font size, line thickness. (User has option to override it too) 
-
-### install
+### Install
+---
 ```bash
 pip install drawline
 ```
 
+### Screenshots
+1. **Polygon draw (Normal mode)**: Good to use when there are less number of polygons to draw.
 
-![Poly normal](https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_normal.png)
-![Poly graph](https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_graph.png)
-![Rect normal](https://github.com/bendangnuksung/drawline/raw/master/screenshots/rect_normal.png)
+<img src="https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_norect.png" alt="Cloud Image" width="50%" heigh="50%" title="Poly normal">
+&nbsp;
+
+2. **Polygon draw (Graph mode)**: Good to use when there are many number of polygons to draw. Overcomes the overlay labels problem.
+
+<img src = "https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_normal.png" height="50%" width ="50%" /> <img src = "https://github.com/bendangnuksung/drawline/raw/master/screenshots/poly_graph.png" height="75%" width ="75%" />
+&nbsp;
+
+3. **Rectangle draw (normal mode)**: You can also simlpy draw a rectangle instead of polygon.
+<img src="https://github.com/bendangnuksung/drawline/raw/master/screenshots/rect_normal.png" alt="Rect normal" width="50%" heigh="50%" title="Rect normal">
 
 
-### How to use
+## How to use
+---
 
-Example: [Notebook Example (NB viewer)](https://nbviewer.org/github/bendangnuksung/drawline/blob/master/examples/example.ipynb) or [Github Viewer](https://github.com/bendangnuksung/drawline/blob/master/examples/example.ipynb) 
+Checkout the example: 
+[Notebook Example (NB viewer)](https://nbviewer.org/github/bendangnuksung/drawline/blob/master/examples/example.ipynb) or [Github Viewer](https://github.com/bendangnuksung/drawline/blob/master/examples/example.ipynb)   
+  
+OR
 
 
 ```python
@@ -49,6 +59,7 @@ result_image = draw_poly(image, CONTOURS, label=['label_1', 'label_2', ...])
 ```
 
 ### Default options
+---
 
 ```python
 def draw_rect(image, points, rgb=None, label_transparency=0.1, thickness=None, labels=None,
@@ -97,4 +108,3 @@ def draw_poly(image, contours, fill_in=True, label_transparency=0.1, fill_transp
     :return: (Numpy) drawn polygon on image
     """
 ```
-
