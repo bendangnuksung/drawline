@@ -1,4 +1,5 @@
 # Drawline
+[![Downloads](https://static.pepy.tech/badge/drawline)](https://pepy.tech/project/drawline)  
 
 Say goodbye to endless searching and trial-and-error with image overlays! Drawline makes it effortless to overlay polyggon contours, rectangles and even auto-handles label colors, font size and line thickness. With the option to override, Drawline takes the hassle out of image drawing customization
 
